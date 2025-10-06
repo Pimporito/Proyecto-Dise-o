@@ -1,752 +1,161 @@
-
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Reservas Deportes (simulado)</title>
-<style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-  body{margin:0;background:#ffffff;color:#111827}
-  header{padding:16px 20px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}
-  h1{margin:0;font-size:18px}
-  main{padding:20px}
-
-  table{width:100%;border-collapse:collapse;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
-  th,td{padding:10px 12px;border-bottom:1px solid #e2e8f0;text-align:left}
-  th{background:#eef2ff;color:#0f172a}
-  tr:last-child td{border-bottom:none}
-
-  .actions{display:flex;gap:8px}
-  button{padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
-  button:hover{background:#eef2f7}
-  button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
-  button.primary:hover{background:#1d4ed8}
-  button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
-  button.danger:hover{background:#dc2626}
-  button:disabled{opacity:.55;cursor:not-allowed}
-
-  .msg{margin-top:10px;min-height:1.2em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono";font-size:12px;color:#334155}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reservas Deportes (simulado)</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    body{margin:0;background:#ffffff;color:#111827}
+    header{padding:16px 20px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}
+    h1{margin:0;font-size:18px}
+    main{padding:20px}
+    table{width:100%;border-collapse:collapse;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
+    th,td{padding:10px 12px;border-bottom:1px solid #e2e8f0;text-align:left}
+    th{background:#eef2ff;color:#0f172a}
+    tr:last-child td{border-bottom:none}
+    .actions{display:flex;gap:8px}
+    button{padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
+    button:hover{background:#eef2f7}
+    button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
+    button.primary:hover{background:#1d4ed8}
+    button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
+    button.danger:hover{background:#dc2626}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .msg{margin-top:10px;min-height:1.2em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono";font-size:12px;color:#334155}
+  </style>
 </head>
 <body>
-<header><h1>Reservas de Deportes</h1></header>
-<main>
-  <div class="msg">Simulación local (sin ESP8266). Se guarda en tu navegador.</div>
-  <table id="tabla">
-    <thead>
-      <tr>
-        <th>Deporte</th>
-        <th>Profesor</th>
-        <th>Hora inicio</th>
-        <th>Hora término</th>
-        <th>Reservados</th>
-        <th>Cupo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</main>
+  <header><h1>Reservas de Deportes</h1></header>
+  <main>
+    <div class="msg">Simulación local (sin ESP8266). Se guarda en tu navegador.</div>
+    <table id="tabla">
+      <thead>
+        <tr>
+          <th>Deporte</th>
+          <th>Profesor</th>
+          <th>Hora inicio</th>
+          <th>Hora término</th>
+          <th>Reservados</th>
+          <th>Cupo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </main>
 
-<script>
-// -------- Datos base (de tu captura) --------
-const base = [
-  {deporte:"Aerobox",                profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
-  {deporte:"Básquetbol",             profesor:"Aldo Devoto Olguin",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 9, cupo:20},
-  {deporte:"Cross Training",         profesor:"Ignacio Ordinas",                   horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 7, cupo:25},
-  {deporte:"Escalada",               profesor:"Martin Morales",                    horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20}, // lleno
-  {deporte:"Futbolito Hombres",      profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100,cupo:100}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 5, cupo:20},
-  {deporte:"Futbolito Hombres (24).",profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 3, cupo:24},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100,cupo:100}  // lleno
-];
+  <script>
+    const base = [
+      {deporte:"Aerobox", profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
+      {deporte:"Básquetbol", profesor:"Aldo Devoto Olguin", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:9, cupo:20},
+      {deporte:"Cross Training", profesor:"Ignacio Ordinas", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:7, cupo:25},
+      {deporte:"Escalada", profesor:"Martin Morales", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10},
+      {deporte:"Fit Ball", profesor:"Maria Paz Ulzurrun", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20},
+      {deporte:"Futbolito Hombres", profesor:"Maximiliano Hernández", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
+      {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100, cupo:100},
+      {deporte:"Fit Ball", profesor:"Maria Paz Ulzurrun", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:5, cupo:20},
+      {deporte:"Futbolito Hombres (24).", profesor:"Maximiliano Hernández", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:3, cupo:24},
+      {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
+      {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100, cupo:100}
+    ];
 
-// -------- Persistencia --------
-const DATA_KEY = "reservas_demo_v3_data";
-const USER_KEY = "reservas_demo_v3_user"; // {reservedIndex: number|null}
+    const DATA_KEY = "reservas_demo_v3_data";
+    const USER_KEY = "reservas_demo_v3_user";
 
-function loadData(){
-  try{
-    const s = localStorage.getItem(DATA_KEY);
-    if(!s) return structuredClone(base);
-    const arr = JSON.parse(s);
-    if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base);
-    return arr;
-  }catch{ return structuredClone(base); }
-}
-function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
-
-function loadUser(){
-  try{
-    const s = localStorage.getItem(USER_KEY);
-    if(!s) return { reservedIndex:null };
-    const u = JSON.parse(s);
-    if(typeof u?.reservedIndex !== "number" && u?.reservedIndex !== null) return { reservedIndex:null };
-    return u;
-  }catch{ return { reservedIndex:null }; }
-}
-function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
-
-let actividades = loadData();
-let user = loadUser();
-
-const tbody = document.getElementById("tbody");
-
-// -------- Render --------
-function render(){
-  tbody.innerHTML = "";
-... (81 líneas restantes)
-Contraer
-message.txt
-8 KB
-﻿
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Reservas Deportes (simulado)</title>
-<style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-  body{margin:0;background:#ffffff;color:#111827}
-  header{padding:16px 20px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}
-  h1{margin:0;font-size:18px}
-  main{padding:20px}
-
-  table{width:100%;border-collapse:collapse;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
-  th,td{padding:10px 12px;border-bottom:1px solid #e2e8f0;text-align:left}
-  th{background:#eef2ff;color:#0f172a}
-  tr:last-child td{border-bottom:none}
-
-  .actions{display:flex;gap:8px}
-  button{padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
-  button:hover{background:#eef2f7}
-  button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
-  button.primary:hover{background:#1d4ed8}
-  button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
-  button.danger:hover{background:#dc2626}
-  button:disabled{opacity:.55;cursor:not-allowed}
-
-  .msg{margin-top:10px;min-height:1.2em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono";font-size:12px;color:#334155}
-</style>
-</head>
-<body>
-<header><h1>Reservas de Deportes</h1></header>
-<main>
-  <div class="msg">Simulación local (sin ESP8266). Se guarda en tu navegador.</div>
-  <table id="tabla">
-    <thead>
-      <tr>
-        <th>Deporte</th>
-        <th>Profesor</th>
-        <th>Hora inicio</th>
-        <th>Hora término</th>
-        <th>Reservados</th>
-        <th>Cupo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</main>
-
-<script>
-// -------- Datos base (de tu captura) --------
-const base = [
-  {deporte:"Aerobox",                profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
-  {deporte:"Básquetbol",             profesor:"Aldo Devoto Olguin",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 9, cupo:20},
-  {deporte:"Cross Training",         profesor:"Ignacio Ordinas",                   horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 7, cupo:25},
-  {deporte:"Escalada",               profesor:"Martin Morales",                    horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20}, // lleno
-  {deporte:"Futbolito Hombres",      profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100,cupo:100}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 5, cupo:20},
-  {deporte:"Futbolito Hombres (24).",profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 3, cupo:24},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100,cupo:100}  // lleno
-];
-
-// -------- Persistencia --------
-const DATA_KEY = "reservas_demo_v3_data";
-const USER_KEY = "reservas_demo_v3_user"; // {reservedIndex: number|null}
-
-function loadData(){
-  try{
-    const s = localStorage.getItem(DATA_KEY);
-    if(!s) return structuredClone(base);
-    const arr = JSON.parse(s);
-    if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base);
-    return arr;
-  }catch{ return structuredClone(base); }
-}
-function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
-
-function loadUser(){
-  try{
-    const s = localStorage.getItem(USER_KEY);
-    if(!s) return { reservedIndex:null };
-    const u = JSON.parse(s);
-    if(typeof u?.reservedIndex !== "number" && u?.reservedIndex !== null) return { reservedIndex:null };
-    return u;
-  }catch{ return { reservedIndex:null }; }
-}
-function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
-
-let actividades = loadData();
-let user = loadUser();
-
-const tbody = document.getElementById("tbody");
-
-// -------- Render --------
-function render(){
-  tbody.innerHTML = "";
-  actividades.forEach((a,i)=>{
-    const lleno = a.reservados >= a.cupo;
-    const yoAqui = user.reservedIndex === i;
-    const tengoReservaEnOtro = user.reservedIndex !== null && !yoAqui;
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${a.deporte}</td>
-      <td>${a.profesor}</td>
-      <td>${a.horaInicio}</td>
-      <td>${a.horaFin}</td>
-      <td id="res-${i}">${a.reservados}</td>
-      <td id="cupo-${i}">${a.cupo}</td>
-      <td class="actions" id="act-${i}"></td>
-    `;
-    tbody.appendChild(tr);
-
-    const cell = document.getElementById(`act-${i}`);
-
-    if(yoAqui){
-      // Mostrar botón Cancelar
-      const bCancel = document.createElement("button");
-      bCancel.className = "danger";
-      bCancel.textContent = "Cancelar";
-      bCancel.addEventListener("click", ()=>cancelar(i));
-      cell.appendChild(bCancel);
-    } else {
-      // Mostrar botón Reservar según reglas
-      const bRes = document.createElement("button");
-      bRes.className = "primary";
-      bRes.textContent = lleno ? "Sin cupos" : "Reservar";
-      bRes.disabled = lleno || tengoReservaEnOtro;
-      if(tengoReservaEnOtro) bRes.title = "Ya tienes una reserva. Cancélala para reservar otra.";
-      bRes.addEventListener("click", ()=>reservar(i));
-      cell.appendChild(bRes);
+    function loadData(){
+      try{
+        const s = localStorage.getItem(DATA_KEY);
+        if(!s) return structuredClone(base);
+        const arr = JSON.parse(s);
+        if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base);
+        return arr;
+      }catch{ return structuredClone(base); }
     }
-  });
-}
+    function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
 
-// -------- Lógica --------
-function reservar(i){
-  // Si ya tengo una reserva, no permito reservar otra
-  if(user.reservedIndex !== null) return; // UI ya lo deshabilita
-  const a = actividades[i];
-  if(a.cupo <= 0) return;
-
-  a.reservados += 1;
-  a.cupo      -= 1;
-  user.reservedIndex = i;
-
-  saveData(actividades);
-  saveUser(user);
-  actualizarFila(i, /*reservado*/true);
-  render(); // para actualizar botones de las demás filas
-}
-
-function cancelar(i){
-  if(user.reservedIndex !== i) return; // seguridad
-  const a = actividades[i];
-
-  // revertir
-  if(a.reservados > 0) a.reservados -= 1;
-  a.cupo += 1;
-  user.reservedIndex = null;
-
-  saveData(actividades);
-  saveUser(user);
-  actualizarFila(i, /*reservado*/false);
-  render();
-}
-
-function actualizarFila(i, reservado){
-  document.getElementById(`res-${i}`).textContent = actividades[i].reservados;
-  document.getElementById(`cupo-${i}`).textContent = actividades[i].cupo;
-}
-
-render();
-</script>
-</body>
-</html>
-
-bien, ahora si quiero cambiar el código que tengo en vs Code por este que te voy a mandar, se va a actualizar en la pagina web?
-
-
-
-
-
-// Prueba: escaneo de redes WiFi para comprobar ESP8266
-// Copia/pega en Arduino IDE y sube a tu placa (ej. NodeMCU, Wemos D1 mini)
-
-#include <ESP8266WiFi.h>
-
-void setup() {
-  Serial.begin(115200);
-  delay(100);
-  Serial.println();
-  Serial.println("== ESP8266 WiFi Scan Test ==");
-
-  // Asegurarse que el adaptador WiFi esté en modo station (no AP)
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect(); // desconecta de redes previas
-  delay(100);
-}
-
-void loop() {
-  Serial.println("Iniciando escaneo de redes WiFi...");
-  int n = WiFi.scanNetworks(); // escaneo bloqueante
-  if (n == 0) {
-    Serial.println("No se encontraron redes.");
-  } else {
-    Serial.printf("%d redes encontradas:\n", n);
-    for (int i = 0; i < n; ++i) {
-      // SSID, RSSI (dBm), canal, tipo de encriptación
-      String ssid = WiFi.SSID(i);
-      int32_t rssi = WiFi.RSSI(i);
-      int32_t channel = WiFi.channel(i);
-      String enc;
-      switch (WiFi.encryptionType(i)) {
-        case ENC_TYPE_NONE: enc = "OPEN"; break;
-        case ENC_TYPE_WEP:  enc = "WEP";  break;
-        case ENC_TYPE_TKIP: enc = "WPA/TKIP"; break;
-        case ENC_TYPE_CCMP: enc = "WPA2/CCMP"; break;
-        case ENC_TYPE_AUTO: enc = "AUTO"; break;
-        default: enc = "UNKNOWN"; break;
-      }
-      Serial.printf("%02d: %s  | RSSI: %d dBm | Ch: %d | %s\n", i+1, ssid.c_str(), rssi, channel, enc.c_str());
-      delay(10);
+    function loadUser(){
+      try{
+        const s = localStorage.getItem(USER_KEY);
+        if(!s) return { reservedIndex:null };
+        const u = JSON.parse(s);
+        if(typeof u?.reservedIndex !== "number" && u?.reservedIndex !== null) return { reservedIndex:null };
+        return u;
+      }catch{ return { reservedIndex:null }; }
     }
-  }
+    function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
 
-  // Liberar memoria usada por el escaneo (si se usa scanNetworks async se haría distinto)
-  WiFi.scanDelete();
+    let actividades = loadData();
+    let user = loadUser();
 
-  Serial.println("------- Fin del escaneo -------");
-  // Espera antes de volver a escanear (evita escaneos continuos)
-  delay(10000); // 10 segundos
-}
-LoathingTax464 — 29/9/25, 14:23
-/*
- * Sistema de Monitoreo IoT con Alarma Silenciosa
- * Plataforma: ESP8266 NodeMCU
- * Sensor: RFID-RC522
- * Display: OLED 0.91" I2C
- * Autor: Sistema IoT
-Expandir
-message.txt
-15 KB
-Instalar desde el Gestor de Librerías (Herramientas → Administrar Bibliotecas):
+    const tbody = document.getElementById("tbody");
 
-MFRC522 by GithubCommunity (v1.4.10+)
-Adafruit SSD1306 (v2.5.7+)
-Adafruit GFX Library (v1.11.5+)
-ESPAsyncWebServer - Descargar de: https://github.com/me-no-dev/ESPAsyncWebServer
-ESPAsyncTCP - Descargar de: https://github.com/me-no-dev/ESPAsyncTCP
-GitHub
-GitHub - me-no-dev/ESPAsyncWebServer: Async Web Server for ESP8266 ...
-Async Web Server for ESP8266 and ESP32. Contribute to me-no-dev/ESPAsyncWebServer development by creating an account on GitHub.
-Async Web Server for ESP8266 and ESP32. Contribute to me-no-dev/ESPAsyncWebServer development by creating an account on GitHub.
-GitHub
-GitHub - me-no-dev/ESPAsyncTCP: Async TCP Library for ESP8266
-Async TCP Library for ESP8266. Contribute to me-no-dev/ESPAsyncTCP development by creating an account on GitHub.
-Async TCP Library for ESP8266. Contribute to me-no-dev/ESPAsyncTCP development by creating an account on GitHub.
-Gero_urti — 29/9/25, 14:28
-Compilation error: 'D8' was not declared in this scope; did you mean 's8'?
-LoathingTax464 — 29/9/25, 14:29
-/*
- * Sistema de Monitoreo IoT con Alarma Silenciosa
- * Plataforma: ESP8266 NodeMCU
- * Sensor: RFID-RC522
- * Display: OLED 0.91" I2C
- * Autor: Sistema IoT
-Expandir
-message.txt
-16 KB
-Imagen
-LoathingTax464 — 29/9/25, 14:38
-Imagen
-Gero_urti — 29/9/25, 14:46
-C:\Users\Usuario\AppData\Local\Temp\.arduinoIDE-unsaved2025829-18104-1k5i6ok.d91q\sketch_sep29a\Codigo2.ino:37: warning: "SS_PIN" redefined
-   37 | #define SS_PIN 15       // D8 - Pin SDA del RFID
-      | 
-C:\Users\Usuario\AppData\Local\Temp\.arduinoIDE-unsaved2025829-18104-1k5i6ok.d91q\sketch_sep29a\sketch_sep29a.ino:24: note: this is the location of the previous definition
-   24 | #define SS_PIN D8       // Pin SDA del RFID
-      | 
-Expandir
-message.txt
-14 KB
-LoathingTax464 — 29/9/25, 15:02
-/*
- * DIAGNÓSTICO DE CONEXIÓN WIFI
- * ESP8266 NodeMCU
- * Este código ayuda a identificar problemas de conexión
- */
-Expandir
-message.txt
-9 KB
-LoathingTax464 — 29/9/25, 15:31
-/*
- * Sistema de Monitoreo IoT con Alarma Silenciosa
- * Plataforma: ESP8266 NodeMCU
- * Sensor: RFID-RC522
- * Display: OLED 0.91" I2C
- * Autor: Sistema IoT
-Expandir
-message.txt
-17 KB
-Gero_urti — 29/9/25, 15:38
-C:\Users\Usuario\AppData\Local\Temp\.arduinoIDE-unsaved2025829-25328-1ufw9x6.kujd\sketch_sep29a\sketch_sep29a.ino: In lambda function:
-C:\Users\Usuario\AppData\Local\Temp\.arduinoIDE-unsaved2025829-25328-1ufw9x6.kujd\sketch_sep29a\sketch_sep29a.ino:414:33: error: 'currentUserName' was not declared in this scope
-  414 |     json += "\"userName\":\"" + currentUserName + "\",";
-      |                                 ^~~~~~~~~~~~~~~
-C:\Users\Usuario\AppData\Local\Temp\.arduinoIDE-unsaved2025829-25328-1ufw9x6.kujd\sketch_sep29a\sketch_sep29a.ino:415:32: error: 'currentUserAge' was not declared in this scope
-  415 |     json += "\"userAge\":\"" + currentUserAge + "\",";
-Expandir
-message.txt
-5 KB
-Pimporito — 29/9/25, 16:05
-/*
- * Sistema de Monitoreo IoT con Alarma Silenciosa
- * Plataforma: ESP8266 NodeMCU
- * Sensor: RFID-RC522
- * Display: OLED 0.91" I2C
- * Autor: Sistema IoT
-Expandir
-message.txt
-15 KB
-Antitoo_ — 3/10/25, 16:50
-/*
- * ESP8266 - Reservas deportivas + Monitor RFID (página /reservas + /)
- * - Tabla con Deporte, Profesor, Hora inicio, Hora término, Reservados, Cupo y botón Reservar
- * - Actualización en tiempo real via Server-Sent Events (SSE)
- * - Persistencia de "reservas" en EEPROM
- * - Ganchos para sincronizar con una BD remota cuando la tengas lista (HTTP REST)
-Expandir
-message.txt
-17 KB
-Pimporito — 4/10/25, 12:01
-bien escucha con atención. Nuestro proyecto consiste en una tarjeta con tecnología RFID, la cual por supuesto esta conectada a un sensor RFID-RC522, conectado a una placa ESP8266 por medio de cables en una protoboard. Lo que queremos es que generes una pagina web, la cual irá vinculada a una base de datos (no terminada aún) en la cual existan las opciones de reservar distintas clases de deporte (por ejemplo football, voleyball, escalada, gimnasio, entre otros) a distintos horarios entre las 7 de la mañana y las 6 de la tarde. Con los datos de horario y clase, que se cargaran desde la pagina web a la base de datos, estarán guardados en la tarjeta, la cual permitirá el acceso al camarín del gimnasio en el horario en que se pidió la clase, con una diferencia por ejemplo de entre 5-10 minutos antes y después del termino de la clase, por lo que el alumno no podrá acceder al gimnasio en otro horario o si no tiene una clase reservada, lo que para nosotros significa que el sensor RFID prenderá un led rojo como respuesta negativa, en caso de que se quiera entrar en otro horario, y un led verde en caso de que este dentro del horario reservado. Quiero que tu crees esta pagina web, la cual posteriormente vincularemos a la base de datos. Esta pagina web debe permitirle al alumno elegir su clase de deporte y el horario en que la quiere (esta información sobre las clases y los horarios sera proporcionada por la base de datos que luego crearemos, asi que esta pagina debe poder vincularse a la base de datos) arrojando entonces el dato de si el alumno tiene una clase reservada o no en un intervalo de tiempo, que será lo que dure la clase +-10 minutos, para que alcance a entrar al camarín y sacar sus cosas.
-Gero_urti — 14:06
-RFID-RC522
-Pantalla OLED 0,91"
-Placa ESP8266
-20 cables
-4 cables macho-hembra
-Protoboard
-Gero_urti — 14:16
-LED verde
-Led roja
-Antitoo_ — 14:31
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reservas Deportes - ESP8266</title>
-<style>
-Expandir
-message.txt
-5 KB
-LoathingTax464 — 14:35
-Imagen
-Antitoo_ — 14:57
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Reservas Deportes (simulado)</title>
-<style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-  body{margin:0;background:#ffffff;color:#111827}
-  header{padding:16px 20px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}
-  h1{margin:0;font-size:18px}
-  main{padding:20px}
+    function render(){
+      tbody.innerHTML = "";
+      actividades.forEach((a,i)=>{
+        const lleno = a.reservados >= a.cupo;
+        const yoAqui = user.reservedIndex === i;
+        const tengoReservaEnOtro = user.reservedIndex !== null && !yoAqui;
 
-  table{width:100%;border-collapse:collapse;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
-  th,td{padding:10px 12px;border-bottom:1px solid #e2e8f0;text-align:left}
-  th{background:#eef2ff;color:#0f172a}
-  tr:last-child td{border-bottom:none}
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${a.deporte}</td>
+          <td>${a.profesor}</td>
+          <td>${a.horaInicio}</td>
+          <td>${a.horaFin}</td>
+          <td id="res-${i}">${a.reservados}</td>
+          <td id="cupo-${i}">${a.cupo}</td>
+          <td class="actions" id="act-${i}"></td>
+        `;
+        tbody.appendChild(tr);
 
-  .actions{display:flex;gap:8px}
-  button{padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
-  button:hover{background:#eef2f7}
-  button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
-  button.primary:hover{background:#1d4ed8}
-  button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
-  button.danger:hover{background:#dc2626}
-  button:disabled{opacity:.55;cursor:not-allowed}
+        const cell = document.getElementById(\`act-\${i}\`);
 
-  .msg{margin-top:10px;min-height:1.2em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono";font-size:12px;color:#334155}
-</style>
-</head>
-<body>
-<header><h1>Reservas de Deportes</h1></header>
-<main>
-  <div class="msg">Simulación local (sin ESP8266). Se guarda en tu navegador.</div>
-  <table id="tabla">
-    <thead>
-      <tr>
-        <th>Deporte</th>
-        <th>Profesor</th>
-        <th>Hora inicio</th>
-        <th>Hora término</th>
-        <th>Reservados</th>
-        <th>Cupo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</main>
-
-<script>
-// -------- Datos base (de tu captura) --------
-const base = [
-  {deporte:"Aerobox",                profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
-  {deporte:"Básquetbol",             profesor:"Aldo Devoto Olguin",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 9, cupo:20},
-  {deporte:"Cross Training",         profesor:"Ignacio Ordinas",                   horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 7, cupo:25},
-  {deporte:"Escalada",               profesor:"Martin Morales",                    horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20}, // lleno
-  {deporte:"Futbolito Hombres",      profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100,cupo:100}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 5, cupo:20},
-  {deporte:"Futbolito Hombres (24).",profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 3, cupo:24},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100,cupo:100}  // lleno
-];
-
-// -------- Persistencia --------
-const DATA_KEY = "reservas_demo_v3_data";
-const USER_KEY = "reservas_demo_v3_user"; // {reservedIndex: number|null}
-
-function loadData(){
-  try{
-    const s = localStorage.getItem(DATA_KEY);
-    if(!s) return structuredClone(base);
-    const arr = JSON.parse(s);
-    if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base);
-    return arr;
-  }catch{ return structuredClone(base); }
-}
-function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
-
-function loadUser(){
-  try{
-    const s = localStorage.getItem(USER_KEY);
-    if(!s) return { reservedIndex:null };
-    const u = JSON.parse(s);
-    if(typeof u?.reservedIndex !== "number" && u?.reservedIndex !== null) return { reservedIndex:null };
-    return u;
-  }catch{ return { reservedIndex:null }; }
-}
-function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
-
-let actividades = loadData();
-let user = loadUser();
-
-const tbody = document.getElementById("tbody");
-
-// -------- Render --------
-function render(){
-  tbody.innerHTML = "";
-... (81 líneas restantes)
-Contraer
-message.txt
-8 KB
-﻿
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Reservas Deportes (simulado)</title>
-<style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-  body{margin:0;background:#ffffff;color:#111827}
-  header{padding:16px 20px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}
-  h1{margin:0;font-size:18px}
-  main{padding:20px}
-
-  table{width:100%;border-collapse:collapse;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
-  th,td{padding:10px 12px;border-bottom:1px solid #e2e8f0;text-align:left}
-  th{background:#eef2ff;color:#0f172a}
-  tr:last-child td{border-bottom:none}
-
-  .actions{display:flex;gap:8px}
-  button{padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
-  button:hover{background:#eef2f7}
-  button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
-  button.primary:hover{background:#1d4ed8}
-  button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
-  button.danger:hover{background:#dc2626}
-  button:disabled{opacity:.55;cursor:not-allowed}
-
-  .msg{margin-top:10px;min-height:1.2em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono";font-size:12px;color:#334155}
-</style>
-</head>
-<body>
-<header><h1>Reservas de Deportes</h1></header>
-<main>
-  <div class="msg">Simulación local (sin ESP8266). Se guarda en tu navegador.</div>
-  <table id="tabla">
-    <thead>
-      <tr>
-        <th>Deporte</th>
-        <th>Profesor</th>
-        <th>Hora inicio</th>
-        <th>Hora término</th>
-        <th>Reservados</th>
-        <th>Cupo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</main>
-
-<script>
-// -------- Datos base (de tu captura) --------
-const base = [
-  {deporte:"Aerobox",                profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
-  {deporte:"Básquetbol",             profesor:"Aldo Devoto Olguin",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 9, cupo:20},
-  {deporte:"Cross Training",         profesor:"Ignacio Ordinas",                   horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados: 7, cupo:25},
-  {deporte:"Escalada",               profesor:"Martin Morales",                    horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20}, // lleno
-  {deporte:"Futbolito Hombres",      profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100,cupo:100}, // lleno
-  {deporte:"Fit Ball",               profesor:"Maria Paz Ulzurrun",                horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 5, cupo:20},
-  {deporte:"Futbolito Hombres (24).",profesor:"Maximiliano Hernández",             horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados: 3, cupo:24},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
-  {deporte:"Gimnasio",               profesor:"Sebastián Fuenzalida",              horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100,cupo:100}  // lleno
-];
-
-// -------- Persistencia --------
-const DATA_KEY = "reservas_demo_v3_data";
-const USER_KEY = "reservas_demo_v3_user"; // {reservedIndex: number|null}
-
-function loadData(){
-  try{
-    const s = localStorage.getItem(DATA_KEY);
-    if(!s) return structuredClone(base);
-    const arr = JSON.parse(s);
-    if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base);
-    return arr;
-  }catch{ return structuredClone(base); }
-}
-function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
-
-function loadUser(){
-  try{
-    const s = localStorage.getItem(USER_KEY);
-    if(!s) return { reservedIndex:null };
-    const u = JSON.parse(s);
-    if(typeof u?.reservedIndex !== "number" && u?.reservedIndex !== null) return { reservedIndex:null };
-    return u;
-  }catch{ return { reservedIndex:null }; }
-}
-function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
-
-let actividades = loadData();
-let user = loadUser();
-
-const tbody = document.getElementById("tbody");
-
-// -------- Render --------
-function render(){
-  tbody.innerHTML = "";
-  actividades.forEach((a,i)=>{
-    const lleno = a.reservados >= a.cupo;
-    const yoAqui = user.reservedIndex === i;
-    const tengoReservaEnOtro = user.reservedIndex !== null && !yoAqui;
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${a.deporte}</td>
-      <td>${a.profesor}</td>
-      <td>${a.horaInicio}</td>
-      <td>${a.horaFin}</td>
-      <td id="res-${i}">${a.reservados}</td>
-      <td id="cupo-${i}">${a.cupo}</td>
-      <td class="actions" id="act-${i}"></td>
-    `;
-    tbody.appendChild(tr);
-
-    const cell = document.getElementById(`act-${i}`);
-
-    if(yoAqui){
-      // Mostrar botón Cancelar
-      const bCancel = document.createElement("button");
-      bCancel.className = "danger";
-      bCancel.textContent = "Cancelar";
-      bCancel.addEventListener("click", ()=>cancelar(i));
-      cell.appendChild(bCancel);
-    } else {
-      // Mostrar botón Reservar según reglas
-      const bRes = document.createElement("button");
-      bRes.className = "primary";
-      bRes.textContent = lleno ? "Sin cupos" : "Reservar";
-      bRes.disabled = lleno || tengoReservaEnOtro;
-      if(tengoReservaEnOtro) bRes.title = "Ya tienes una reserva. Cancélala para reservar otra.";
-      bRes.addEventListener("click", ()=>reservar(i));
-      cell.appendChild(bRes);
+        if(yoAqui){
+          const bCancel = document.createElement("button");
+          bCancel.className = "danger";
+          bCancel.textContent = "Cancelar";
+          bCancel.addEventListener("click", ()=>cancelar(i));
+          cell.appendChild(bCancel);
+        } else {
+          const bRes = document.createElement("button");
+          bRes.className = "primary";
+          bRes.textContent = lleno ? "Sin cupos" : "Reservar";
+          bRes.disabled = lleno || tengoReservaEnOtro;
+          if(tengoReservaEnOtro) bRes.title = "Ya tienes una reserva. Cancélala para reservar otra.";
+          bRes.addEventListener("click", ()=>reservar(i));
+          cell.appendChild(bRes);
+        }
+      });
     }
-  });
-}
 
-// -------- Lógica --------
-function reservar(i){
-  // Si ya tengo una reserva, no permito reservar otra
-  if(user.reservedIndex !== null) return; // UI ya lo deshabilita
-  const a = actividades[i];
-  if(a.cupo <= 0) return;
+    function reservar(i){
+      if(user.reservedIndex !== null) return;
+      const a = actividades[i];
+      if(a.cupo <= 0) return;
+      a.reservados += 1;
+      a.cupo -= 1;
+      user.reservedIndex = i;
+      saveData(actividades); saveUser(user);
+      actualizarFila(i); render();
+    }
 
-  a.reservados += 1;
-  a.cupo      -= 1;
-  user.reservedIndex = i;
+    function cancelar(i){
+      if(user.reservedIndex !== i) return;
+      const a = actividades[i];
+      if(a.reservados > 0) a.reservados -= 1;
+      a.cupo += 1;
+      user.reservedIndex = null;
+      saveData(actividades); saveUser(user);
+      actualizarFila(i); render();
+    }
 
-  saveData(actividades);
-  saveUser(user);
-  actualizarFila(i, /*reservado*/true);
-  render(); // para actualizar botones de las demás filas
-}
+    function actualizarFila(i){
+      document.getElementById(\`res-\${i}\`).textContent = actividades[i].reservados;
+      document.getElementById(\`cupo-\${i}\`).textContent = actividades[i].cupo;
+    }
 
-function cancelar(i){
-  if(user.reservedIndex !== i) return; // seguridad
-  const a = actividades[i];
-
-  // revertir
-  if(a.reservados > 0) a.reservados -= 1;
-  a.cupo += 1;
-  user.reservedIndex = null;
-
-  saveData(actividades);
-  saveUser(user);
-  actualizarFila(i, /*reservado*/false);
-  render();
-}
-
-function actualizarFila(i, reservado){
-  document.getElementById(`res-${i}`).textContent = actividades[i].reservados;
-  document.getElementById(`cupo-${i}`).textContent = actividades[i].cupo;
-}
-
-render();
-</script>
+    render();
+  </script>
 </body>
 </html>
