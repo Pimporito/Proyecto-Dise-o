@@ -1,161 +1,280 @@
-<!doctype html>
+!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reservas Deportes (simulado)</title>
-  <style>
-    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    body{margin:0;background:#ffffff;color:#111827}
-    header{padding:16px 20px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}
-    h1{margin:0;font-size:18px}
-    main{padding:20px}
-    table{width:100%;border-collapse:collapse;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
-    th,td{padding:10px 12px;border-bottom:1px solid #e2e8f0;text-align:left}
-    th{background:#eef2ff;color:#0f172a}
-    tr:last-child td{border-bottom:none}
-    .actions{display:flex;gap:8px}
-    button{padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
-    button:hover{background:#eef2f7}
-    button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
-    button.primary:hover{background:#1d4ed8}
-    button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
-    button.danger:hover{background:#dc2626}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .msg{margin-top:10px;min-height:1.2em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono";font-size:12px;color:#334155}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reservas Deportes — Inicio</title>
+<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  body{margin:0;background:#ffffff;color:#111827;min-height:100vh;display:flex;flex-direction:column}
+  header{padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e6eef7;display:flex;align-items:center;justify-content:space-between}
+  h1{margin:0;font-size:18px}
+  .greeting{font-size:14px;color:#0f172a}
+  main{flex:1;padding:24px;max-width:1100px;margin:0 auto;width:100%}
+  .card{background:#fff;border:1px solid #e6eef7;border-radius:10px;padding:22px;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
+  /* Inicio */
+  .home-title{font-size:22px;margin:0 0 8px 0}
+  .home-sub{color:#475569;margin:0 0 16px 0}
+  .form-row{display:flex;gap:10px;margin-bottom:14px}
+  input[type="text"]{flex:1;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+  button{padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;cursor:pointer}
+  button.primary{background:#2563eb;color:#fff;border-color:#1e40af}
+  button.ghost{background:transparent;border:1px solid #94a3b8;color:#0f172a}
+  /* App (reservas) */
+  .note{margin-bottom:12px;color:#374151;font-size:14px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e6eef7;border-radius:8px;overflow:hidden}
+  th,td{padding:10px 12px;border-bottom:1px solid #eef2f7;text-align:left}
+  th{background:#eef6ff;color:#06203a;font-weight:600}
+  tr:last-child td{border-bottom:none}
+  .actions{display:flex;gap:8px}
+  button.danger{background:#ef4444;color:#fff;border-color:#dc2626}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  footer{padding:12px 18px;background:#f8fafc;border-top:1px solid #e6eef7;text-align:center;color:#475569;font-size:13px}
+  @media (max-width:640px){ .form-row{flex-direction:column} }
+</style>
 </head>
 <body>
-  <header><h1>Reservas de Deportes</h1></header>
-  <main>
-    <div class="msg">Simulación local (sin ESP8266). Se guarda en tu navegador.</div>
-    <table id="tabla">
-      <thead>
-        <tr>
-          <th>Deporte</th>
-          <th>Profesor</th>
-          <th>Hora inicio</th>
-          <th>Hora término</th>
-          <th>Reservados</th>
-          <th>Cupo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </main>
+<header>
+  <h1>Reservas de Deportes</h1>
+  <div>
+    <span id="headerGreeting" class="greeting">Bienvenido</span>
+    <button id="btnChange" class="ghost" style="margin-left:12px;display:none">Cambiar usuario</button>
+  </div>
+</header>
 
-  <script>
-    const base = [
-      {deporte:"Aerobox", profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
-      {deporte:"Básquetbol", profesor:"Aldo Devoto Olguin", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:9, cupo:20},
-      {deporte:"Cross Training", profesor:"Ignacio Ordinas", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:7, cupo:25},
-      {deporte:"Escalada", profesor:"Martin Morales", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10},
-      {deporte:"Fit Ball", profesor:"Maria Paz Ulzurrun", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20},
-      {deporte:"Futbolito Hombres", profesor:"Maximiliano Hernández", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
-      {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100, cupo:100},
-      {deporte:"Fit Ball", profesor:"Maria Paz Ulzurrun", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:5, cupo:20},
-      {deporte:"Futbolito Hombres (24).", profesor:"Maximiliano Hernández", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:3, cupo:24},
-      {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
-      {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100, cupo:100}
-    ];
+<main>
+  <!-- PANTALLA INICIO -->
+  <section id="home" class="card" aria-hidden="false" style="display:none">
+    <h2 class="home-title">Bienvenido a Reservas Deportivas</h2>
+    <p class="home-sub">Por favor ingresa tu nombre y apellido para continuar a la sección de reservas.</p>
 
-    const DATA_KEY = "reservas_demo_v3_data";
-    const USER_KEY = "reservas_demo_v3_user";
+    <div style="margin-bottom:8px">
+      <label style="font-size:13px;color:#475569">Nombre y Apellido</label>
+    </div>
+    <div class="form-row">
+      <input id="homeNombre" type="text" placeholder="Nombre" aria-label="Nombre" />
+      <input id="homeApellido" type="text" placeholder="Apellido" aria-label="Apellido" />
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="btnIngresar" class="primary">Ingresar</button>
+    </div>
+  </section>
 
-    function loadData(){
-      try{
-        const s = localStorage.getItem(DATA_KEY);
-        if(!s) return structuredClone(base);
-        const arr = JSON.parse(s);
-        if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base);
-        return arr;
-      }catch{ return structuredClone(base); }
+  <!-- PANTALLA RESERVAS -->
+  <section id="app" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-weight:600" id="userLine">Usuario:</div>
+          <div style="color:#475569;font-size:14px" id="userSub"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="color:#475569;font-size:13px">Reglas:</div>
+          <div style="color:#475569;font-size:13px">1 reserva por usuario – usa "Cancelar" para liberar tu reserva</div>
+        </div>
+      </div>
+
+      <div class="note">Selecciona el deporte y pulsa <strong>Reservar</strong>. Los que están llenos aparecen como "Sin cupos".</div>
+
+      <table id="tabla" aria-describedby="note">
+        <thead>
+          <tr>
+            <th>Deporte</th>
+            <th>Profesor</th>
+            <th>Hora inicio</th>
+            <th>Hora término</th>
+            <th>Reservados</th>
+            <th>Cupo (disponible)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>Simulación local (sin ESP8266). Los datos se guardan en este navegador.</footer>
+
+<script>
+/* ---------- Datos base ---------- */
+const base = [
+  {deporte:"Aerobox", profesor:"Guillermo Octavio Chamorro Urbina", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:15, cupo:20},
+  {deporte:"Básquetbol", profesor:"Aldo Devoto Olguin", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:9, cupo:20},
+  {deporte:"Cross Training", profesor:"Ignacio Ordinas", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:7, cupo:25},
+  {deporte:"Escalada", profesor:"Martin Morales", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:10, cupo:10},
+  {deporte:"Fit Ball", profesor:"Maria Paz Ulzurrun", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:20, cupo:20},
+  {deporte:"Futbolito Hombres", profesor:"Maximiliano Hernández", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:31, cupo:40},
+  {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 15:00", horaFin:"06-10-2025 16:10", reservados:100, cupo:100},
+  {deporte:"Fit Ball", profesor:"Maria Paz Ulzurrun", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:5, cupo:20},
+  {deporte:"Futbolito Hombres (24).", profesor:"Maximiliano Hernández", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:3, cupo:24},
+  {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 16:30", horaFin:"06-10-2025 17:40", reservados:77, cupo:100},
+  {deporte:"Gimnasio", profesor:"Sebastián Fuenzalida", horaInicio:"06-10-2025 18:00", horaFin:"06-10-2025 19:10", reservados:100, cupo:100}
+];
+
+/* ---------- localStorage keys ---------- */
+const DATA_KEY = "reservas_app_data_v1";
+const USER_KEY = "reservas_app_user_v1"; // {name, surname, reservedIndex|null}
+
+/* ---------- helpers persistencia ---------- */
+function loadData(){ try{ const s = localStorage.getItem(DATA_KEY); if(!s) return structuredClone(base); const arr = JSON.parse(s); if(!Array.isArray(arr) || arr.length !== base.length) return structuredClone(base); return arr; }catch{return structuredClone(base);} }
+function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
+function loadUser(){ try{ const s = localStorage.getItem(USER_KEY); if(!s) return {name:null,surname:null,reservedIndex:null}; const u = JSON.parse(s); return {name: u?.name ?? null, surname: u?.surname ?? null, reservedIndex: (typeof u?.reservedIndex === 'number') ? u.reservedIndex : null}; }catch{return {name:null,surname:null,reservedIndex:null}} }
+function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
+
+/* ---------- estado en memoria ---------- */
+let actividades = loadData();
+let user = loadUser();
+
+/* ---------- elementos DOM ---------- */
+const elHome = document.getElementById('home');
+const elApp  = document.getElementById('app');
+const elTablaBody = document.getElementById('tbody');
+const headerGreeting = document.getElementById('headerGreeting');
+const btnChange = document.getElementById('btnChange');
+const headerUserLine = document.getElementById('userLine');
+const headerUserSub = document.getElementById('userSub');
+
+const inNombre = document.getElementById('homeNombre');
+const inApellido = document.getElementById('homeApellido');
+const btnIngresar = document.getElementById('btnIngresar');
+
+/* ---------- navegación ---------- */
+function showHome(){
+  history.replaceState(null,'', '#inicio');
+  elApp.style.display = 'none';
+  elHome.style.display = 'block';
+  btnChange.style.display = 'none';
+  headerGreeting.textContent = 'Bienvenido';
+}
+function showApp(){
+  history.replaceState(null,'', '#reservas');
+  elHome.style.display = 'none';
+  elApp.style.display = 'block';
+  btnChange.style.display = 'inline-block';
+  updateHeader();
+  render();
+}
+function updateHeader(){
+  if(user.name && user.surname){
+    headerGreeting.textContent = `Bienvenido, ${user.name} ${user.surname}`;
+    headerUserSub.textContent = `${user.name} ${user.surname}`;
+  } else {
+    headerGreeting.textContent = 'Bienvenido';
+    headerUserSub.textContent = '';
+  }
+}
+
+/* ---------- acciones inicio ---------- */
+btnIngresar.addEventListener('click', ()=>{
+  const n = inNombre.value.trim();
+  const a = inApellido.value.trim();
+  if(!n || !a){ alert('Por favor ingresa nombre y apellido'); return; }
+  user.name = n; user.surname = a; user.reservedIndex = user.reservedIndex ?? null;
+  saveUser(user);
+  updateHeader();
+  showApp();
+});
+
+/* permitir Enter */
+[inNombre, inApellido].forEach(i => i.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') btnIngresar.click(); }));
+
+/* cambiar usuario (volver al inicio y limpiar user) */
+btnChange.addEventListener('click', ()=>{
+  // opcional: no borrar historial de reserva, solo permitir reemplazar user; aquí sólo navegamos al inicio
+  // si prefieres resetear user: user = {name:null,surname:null,reservedIndex:null}; saveUser(user);
+  user = {name:null, surname:null, reservedIndex:null};
+  saveUser(user);
+  updateHeader();
+  inNombre.value = '';
+  inApellido.value = '';
+  showHome();
+});
+
+/* ---------- render de tabla ---------- */
+function render(){
+  elTablaBody.innerHTML = '';
+  actividades.forEach((a,i)=>{
+    const lleno = a.reservados >= a.cupo;
+    const yoAqui = user.reservedIndex === i;
+    const tengoReservaEnOtro = (user.reservedIndex !== null) && !yoAqui;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${a.deporte}</td>
+      <td>${a.profesor}</td>
+      <td>${a.horaInicio}</td>
+      <td>${a.horaFin}</td>
+      <td id="res-${i}">${a.reservados}</td>
+      <td id="cupo-${i}">${a.cupo}</td>
+      <td id="act-${i}"></td>
+    `;
+    elTablaBody.appendChild(tr);
+
+    const cell = document.getElementById(`act-${i}`);
+    if(yoAqui){
+      const btnCancel = document.createElement('button');
+      btnCancel.className = 'danger';
+      btnCancel.textContent = 'Cancelar';
+      btnCancel.addEventListener('click', ()=>cancelar(i));
+      cell.appendChild(btnCancel);
+    } else {
+      const btnRes = document.createElement('button');
+      btnRes.className = 'primary';
+      btnRes.textContent = lleno ? 'Sin cupos' : 'Reservar';
+      btnRes.disabled = lleno || !!tengoReservaEnOtro || !user.name;
+      if(tengoReservaEnOtro) btnRes.title = 'Ya tienes una reserva. Cancélala para reservar otra.';
+      btnRes.addEventListener('click', ()=>reservar(i));
+      cell.appendChild(btnRes);
     }
-    function saveData(arr){ localStorage.setItem(DATA_KEY, JSON.stringify(arr)); }
+  });
+}
 
-    function loadUser(){
-      try{
-        const s = localStorage.getItem(USER_KEY);
-        if(!s) return { reservedIndex:null };
-        const u = JSON.parse(s);
-        if(typeof u?.reservedIndex !== "number" && u?.reservedIndex !== null) return { reservedIndex:null };
-        return u;
-      }catch{ return { reservedIndex:null }; }
-    }
-    function saveUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
+/* ---------- acciones reservar/cancelar ---------- */
+function reservar(i){
+  if(!user.name){ alert('Debes ingresar tu nombre antes de reservar'); showHome(); return; }
+  if(user.reservedIndex !== null) return;
+  const a = actividades[i];
+  if(a.cupo <= 0) return;
+  a.reservados = (a.reservados ?? 0) + 1;
+  a.cupo = (a.cupo ?? 0) - 1;
+  user.reservedIndex = i;
+  saveData(actividades);
+  saveUser(user);
+  render();
+  updateHeader();
+}
 
-    let actividades = loadData();
-    let user = loadUser();
+function cancelar(i){
+  if(user.reservedIndex !== i) return;
+  const a = actividades[i];
+  if(a.reservados > 0) a.reservados -= 1;
+  a.cupo += 1;
+  user.reservedIndex = null;
+  saveData(actividades);
+  saveUser(user);
+  render();
+  updateHeader();
+}
 
-    const tbody = document.getElementById("tbody");
+/* ---------- inicio: decidir qué pantalla mostrar ---------- */
+function init(){
+  // si user ya existe en storage y tiene nombre → mostrar app; si no, home
+  if(user.name && user.surname){
+    // si hash pide inicio, respetar
+    if(location.hash === '#inicio'){ showHome(); return; }
+    showApp();
+  } else {
+    showHome();
+  }
+  // si se abre con #reservas pero sin user, mostrar home (obliga a ingresar)
+  if(location.hash === '#reservas' && (!user.name || !user.surname)){
+    showHome();
+  }
+}
 
-    function render(){
-      tbody.innerHTML = "";
-      actividades.forEach((a,i)=>{
-        const lleno = a.reservados >= a.cupo;
-        const yoAqui = user.reservedIndex === i;
-        const tengoReservaEnOtro = user.reservedIndex !== null && !yoAqui;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${a.deporte}</td>
-          <td>${a.profesor}</td>
-          <td>${a.horaInicio}</td>
-          <td>${a.horaFin}</td>
-          <td id="res-${i}">${a.reservados}</td>
-          <td id="cupo-${i}">${a.cupo}</td>
-          <td class="actions" id="act-${i}"></td>
-        `;
-        tbody.appendChild(tr);
-
-        const cell = document.getElementById(\`act-\${i}\`);
-
-        if(yoAqui){
-          const bCancel = document.createElement("button");
-          bCancel.className = "danger";
-          bCancel.textContent = "Cancelar";
-          bCancel.addEventListener("click", ()=>cancelar(i));
-          cell.appendChild(bCancel);
-        } else {
-          const bRes = document.createElement("button");
-          bRes.className = "primary";
-          bRes.textContent = lleno ? "Sin cupos" : "Reservar";
-          bRes.disabled = lleno || tengoReservaEnOtro;
-          if(tengoReservaEnOtro) bRes.title = "Ya tienes una reserva. Cancélala para reservar otra.";
-          bRes.addEventListener("click", ()=>reservar(i));
-          cell.appendChild(bRes);
-        }
-      });
-    }
-
-    function reservar(i){
-      if(user.reservedIndex !== null) return;
-      const a = actividades[i];
-      if(a.cupo <= 0) return;
-      a.reservados += 1;
-      a.cupo -= 1;
-      user.reservedIndex = i;
-      saveData(actividades); saveUser(user);
-      actualizarFila(i); render();
-    }
-
-    function cancelar(i){
-      if(user.reservedIndex !== i) return;
-      const a = actividades[i];
-      if(a.reservados > 0) a.reservados -= 1;
-      a.cupo += 1;
-      user.reservedIndex = null;
-      saveData(actividades); saveUser(user);
-      actualizarFila(i); render();
-    }
-
-    function actualizarFila(i){
-      document.getElementById(\`res-\${i}\`).textContent = actividades[i].reservados;
-      document.getElementById(\`cupo-\${i}\`).textContent = actividades[i].cupo;
-    }
-
-    render();
-  </script>
+/* inicializar */
+init();
+</script>
 </body>
 </html>
